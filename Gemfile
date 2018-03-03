@@ -5,6 +5,12 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+# Shim to load environment variables from .env into ENV in development.
+# Storing configuration in the environment is one of the tenets of a twelve-factor app.
+gem 'dotenv-rails', '~> 2.2', require: 'dotenv/rails-now', groups: [:development, :test]
+
+# Process manager for applications with multiple components
+gem 'foreman', '~> 0.84'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.1.5'
@@ -26,12 +32,15 @@ gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
+gem 'redis', '~> 4.0'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
+
+# Background tasks
+gem 'sidekiq', '~> 5.1'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -48,6 +57,9 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
+
+  # Automatic Ruby code style checking tool. Aims to enforce the community-driven Ruby Style Guide.
+  gem 'rubocop', '~> 0.52.1'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
