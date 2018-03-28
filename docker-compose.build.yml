@@ -1,0 +1,42 @@
+version: '3'
+services:
+  build_postgresql:
+    image: postgres:9.6-alpine
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./tmp/container-data/postgresql:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: docker-rails-starter-build
+  build_redis:
+    image: redis:4.0.0-alpine
+    ports:
+      - "16379:6379"
+    volumes:
+      - ./tmp/container-data/redis:/var/lib/redis
+  app:
+    image: docker-rails-starter:latest
+    # build: .
+    ports:
+      - "13000:3000"
+      - "13080:80"
+    environment:
+      - RACK_ENV=production
+      - RAILS_ENV=production
+      - RAILS_MAX_THREADS=5
+      - SECRET_KEY_BASE=e758abb1a38d90c0af56658b6dc19a6d632cf35b654d61e73793d8f4e3a62eed8c8ffea1be2479021ca2bc7fd1e9980c801de787bf9bab189e7172ae8d9a0502
+      - DATABASE_HOST=postgresql
+      - DATABASE_NAME=docker-rails-starter-build
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_TIMEOUT=5000
+      - CACHE_ENABLED=true
+      - REDIS_SIDEKIQ_URL=redis://redis:6379/0
+      - REDIS_CACHE_URL=redis://redis:6379/2/cache
+    depends_on:
+      - build_redis
+      - build_postgresql
+    links:
+      - build_redis:redis
+      - build_postgresql:postgresql

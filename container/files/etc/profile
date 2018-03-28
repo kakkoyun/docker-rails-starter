@@ -1,0 +1,60 @@
+#!/bin/bash
+set -e
+
+# PID of the service process
+SERVICE_PID=""
+
+# Forwards a signal to the service process
+forward_signal() {
+  kill -s "$1" "$SERVICE_PID"
+}
+
+# Traps signals and performs the shutdown sequence
+graceful_shutdown() {
+  # Source all the shutdown script fragments
+  if [ -d /service/etc/shutdown.d ]; then
+    for i in /service/etc/shutdown.d/*.sh; do
+      if [ -r $i ]; then
+        . $i
+      fi
+    done
+    unset i
+  fi
+
+  forward_signal $@
+}
+
+# Utility function to launch service process as unprivileged user
+# Usage: launch username command [arguments]...
+launch() {
+  svcuser="$1"
+  shift 1
+
+  # Sent by `docker stop`, should trigger graceful shutdown
+  trap "graceful_shutdown SIGTERM" SIGTERM
+
+  # Sent by Ctrl+C from interactive runs, should shutdown immediately
+  trap "forward_signal SIGINT" SIGINT
+
+  # Forward other standard signals
+  trap "forward_signal SIGHUP" SIGHUP
+  trap "forward_signal SIGQUIT" SIGQUIT
+
+  # gosu exec's as unprivileged user to step down from root
+  gosu "$svcuser" "$@" &
+  SERVICE_PID="$!"
+
+  # Wait for service process to exit or signals to be trapped
+  # http://tldp.org/LDP/Bash-Beginners-Guide/html/sect_12_02.html
+  while true; do
+    wait "$SERVICE_PID"
+
+    # If a signal was trapped return value is > 128
+    if [ "$?" -lt "129" ]; then
+      # This means the service process exited
+      return
+    fi
+
+    # A signal was trapped, so continue the loop
+  done
+}

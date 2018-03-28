@@ -1,0 +1,20 @@
+postgresql:
+  image: postgres:9.6-alpine
+  ports:
+    - "5432:5432"
+  volumes:
+    - ./tmp/container-data/postgresql:/var/lib/postgresql
+  log_opt:
+    max-size: "100k"
+    max-file: "20"
+  environment:
+    POSTGRES_DB: docker-rails-starter
+redis:
+  image: redis:4.0.0-alpine
+  ports:
+    - "6379:6379"
+  volumes:
+    - ./tmp/container-data/redis:/var/lib/redis
+  log_opt:
+    max-size: "100k"
+    max-file: "20"

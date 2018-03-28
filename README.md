@@ -5,6 +5,7 @@ Personal initial Rails configuration.
 ### Prerequisites
 
 `ruby 2.5.0`
+
 `nodejs 9.7.1`
 
 Also checkout `.tool-versions` file.
